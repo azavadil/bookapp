@@ -1,0 +1,58 @@
+var application_root = __dirname, 
+express = require("express"), 
+path = require("path"), 
+mongoose = require("mongoose"); 
+
+var app = express(); 
+
+app.configure( function(){
+    
+
+    app.use( express.bodyParser() ); 
+    
+    app.use( express.methodOverride() ); 
+    
+    app.use( app.router ); 
+    
+    app.use( express.static( path.join( application_root, "public") ) ); 
+
+    app.use( express.errorHandler({ dumpExceptions: true, showStack: true} )); 
+
+
+    //Connect to database  ec2-54-200-1-107.us-west-2.compute.amazonaws.com
+    mongoose.connect( "mongodb://localhost/library_database" ) ; 
+
+
+
+
+    var Book = new mongoose.Schema({
+	title: String, 
+	author: String, 
+	releaseDate: Date
+    }); 
+
+    var BookModel = mongoose.model("Book", Book); 
+
+    app.get("api/books", function(req, res){
+	return BookModel.find( function( err, books ){ 
+	    if( !err ){ 
+		return response.send( books ); 
+	    } else { 
+		return console.log( err ); 
+	    }
+	}); 
+    }); 
+    
+
+    // Routes
+    app.get("/api", function(req, res){ 
+	res.send("Library API is running"); 
+    }); 
+
+}); 
+
+var port = 8080; 
+app.listen(port, function(){
+    console.log("express server listening on port %d in %s mode", port, app.settings.env); 
+}); 
+
